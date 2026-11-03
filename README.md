@@ -1,101 +1,89 @@
-# 📚 ForoHub - API de Foro Técnico
+<div align="center">
+  <img src="assets/banner.png" alt="ForoHub — banner MOTO" width="100%" />
+</div>
 
-**ForoHub** es una API REST que simula el funcionamiento de un foro profesional de discusión.  
-Permite crear y administrar preguntas, respuestas y usuarios utilizando una arquitectura **stateless**, seguridad con **JWT** y una base de datos relacional.
+# ForoHub — API REST de foro técnico 💬
 
-El proyecto busca aplicar principios del **desarrollo backend moderno**, como autenticación segura, integridad de datos y organización eficiente de la información.
+Backend REST **stateless** que simula un foro profesional de discusión: tópicos, respuestas, cursos y usuarios, con **autenticación JWT**, **integridad de datos** y **borrado lógico** para mantener el historial.
 
----
-
-# 🚀 Funcionalidades Principales
-
-### 🔐 Autenticación y Seguridad
-El sistema utiliza **Spring Security** y **JWT** para proteger el acceso a la API.  
-Cada usuario puede iniciar sesión y acceder a los recursos según sus permisos.
-
-### 📝 Gestión de Tópicos
-Permite crear, consultar, actualizar y eliminar tópicos (CRUD).  
-Cada tópico está relacionado con un **autor y un curso**, lo que permite mantener la información organizada.
-
-### ✅ Respuestas y Soluciones
-Cuando una respuesta es marcada como solución:
-- La respuesta se registra como **solucionada**.
-- El tópico cambia automáticamente su estado a **SOLUCIONADO**.
-
-### 🗑️ Borrado Lógico
-Los tópicos no se eliminan físicamente de la base de datos.  
-En su lugar, se marcan como **inactivos**, lo que permite conservar el historial y estadísticas del foro.
-
-### 🔎 Búsqueda y Filtros
-La API permite filtrar tópicos por:
-- **Curso**
-- **Año de creación**
+Proyecto del desafío *Foro Hub* (Alura One).
 
 ---
 
-## 🏗️ Estructura del Proyecto
+## 🚀 Clonar y correrlo
 
-El proyecto está organizado en capas para facilitar el mantenimiento, la escalabilidad y la separación de responsabilidades.
+### Requisitos
+- Java JDK **17** + Maven (el wrapper `mvnw` viene incluido)
+- **MySQL** corriendo en `localhost:3306`
+- Crear la base `forohub_db` (las tablas las genera **Flyway** solo al arrancar)
 
-forohub/
-├── src/main/java/com/aluracursos/forohub/
-│   ├── controller/            # Endpoints de la API (Tópicos, Respuestas, Login, etc.)
-│   ├── domain/                # Entidades JPA, DTOs y lógica de negocio
-│   │   ├── topico/            # Modelado y reglas de Tópicos
-│   │   ├── respuesta/         # Modelado y reglas de Respuestas
-│   │   ├── usuario/           # Gestión de usuarios
-│   │   ├── perfil/            # Roles o perfiles de usuario
-│   │   └── curso/             # Catálogo de cursos
-│   ├── infra/                 # Infraestructura y configuraciones generales
-│   │   ├── security/          # Seguridad y filtros JWT
-│   │   ├── springdoc/         # Configuración de Swagger (OpenAPI)
-│   │   └── errores/           # Manejo global de excepciones
-│   └── ForoHubApplication.java # Clase principal de la aplicación
-│
-└── src/main/resources/
-    ├── db/migration/          # Migraciones de base de datos con Flyway
-    └── application.properties # Configuración de la aplicación
-    
----
+```bash
+git clone https://github.com/guille2506/ForoChallenge.git
+cd ForoChallenge
+```
 
-# ⚙️ Tecnologías Utilizadas
+### Variables de entorno
 
-- **Java 17**
-- **Spring Boot**
-- **Spring Security**
-- **JWT**
-- **Spring Data JPA**
-- **MySQL**
-- **Maven**
-- **Flyway**
-- **SpringDoc OpenAPI (Swagger)**
+| Variable      | Para qué                                  |
+|---------------|-------------------------------------------|
+| `DB_USERNAME` | usuario de MySQL (ej: `root`)             |
+| `DB_PASSWORD` | contraseña de MySQL                       |
+| `JWT_SECRET`  | frase secreta para firmar los tokens      |
 
----
+⚠️ No olvides configurarlas — sin ellas la app no arranca.
 
-# 🚀 Cómo ejecutar el proyecto
+### Arrancar
 
-### 1. Clonar el repositorio
-https://github.com/guille2506/ForoChallenge.git
+**Windows (PowerShell):**
 
-### 2. Configurar variables de entorno
-Configura las siguientes variables:
+```powershell
+$env:DB_USERNAME = "root"
+$env:DB_PASSWORD = "tu_password"
+$env:JWT_SECRET  = "una-frase-secreta-larga"
+.\mvnw.cmd spring-boot:run
+```
 
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `JWT_SECRET`
+**macOS / Linux:**
 
-### 3. Crear la base de datos
-Crear una base de datos llamada:
-forohub_db
+```bash
+export DB_USERNAME=root
+export DB_PASSWORD=tu_password
+export JWT_SECRET="una-frase-secreta-larga"
+./mvnw spring-boot:run
+```
 
-### 4. Ejecutar la aplicación
-Inicia la clase principal:
-ForoHubApplication.java
-
-Flyway se encargará de crear automáticamente las tablas necesarias.
-
+La API queda en **`http://localhost:8080`**.
 
 ---
 
-# 📄 Licencia
-Este proyecto está bajo la **Licencia MIT**.
+## 🔌 Endpoints principales
+
+| Método                | Ruta                      | Qué hace                                          |
+|-----------------------|---------------------------|---------------------------------------------------|
+| `POST /login`         | email + contraseña        | Devuelve el **token JWT** (el resto pide Bearer)  |
+| `GET/POST /topicos`   | + `PUT/DELETE /{id}`      | CRUD de tópicos (autor + curso)                   |
+| `PUT /respuestas/{id}/solucion` | marca solución  | El tópico pasa a estado **SOLUCIONADO** automático|
+| `GET/POST /respuestas`| + `PUT/DELETE /{id}`      | CRUD de respuestas                                |
+| `GET/POST /cursos`    | + `PUT/DELETE /{id}`      | Catálogo de cursos                                |
+| `GET/POST /perfiles`  |                           | Perfiles (roles)                                  |
+| `GET /usuarios/{id}`  | + `DELETE`                | Usuarios registrados                              |
+
+Todo el CRUD de tópicos usa **borrado lógico**: nada se elimina de la base, se marca inactivo para conservar el historial y estadísticas.
+
+---
+
+## 🧱 Stack
+
+| Capa        | Tecnología                                            |
+|-------------|-------------------------------------------------------|
+| Lenguaje    | Java 17                                               |
+| Framework   | Spring Boot 4 (Web, Data JPA, Security)               |
+| Seguridad   | Spring Security + JWT                                 |
+| Migraciones | Flyway                                                |
+| Base        | MySQL                                                 |
+
+---
+
+<p align="center">
+  <sub><b>moto</b> · hecho con cariño — <a href="https://nuevoportfolio.vercel.app/works/javaProyectos/index.html">portfolio</a></sub>
+</p>
